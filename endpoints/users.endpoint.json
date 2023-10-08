@@ -1,0 +1,18 @@
+[
+  {
+    "request": {
+      "method": "GET",
+      "endpoint": "/users",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "bodyFile": "./endpoints/users.json"
+    }
+  }
+]
