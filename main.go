@@ -50,48 +50,48 @@ func main() {
 	}
 	fmt.Println("endpoints loaded")
 
-  server := &http.Server{Addr: "0.0.0.0:3000", Handler: service(api)}
+	server := &http.Server{Addr: "0.0.0.0:3000", Handler: service(api)}
 
-  serverCtx, serverStopCtx := context.WithCancel(context.Background())
+	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
-  sig := make(chan os.Signal, 1)
-  signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
-  timeout := 30*time.Second
-  go func ()  {
-    <-sig
+	timeout := 30 * time.Second
+	go func() {
+		<-sig
 
-    // first wait for grace period of 30s
-    shutdownCtx, _ := context.WithTimeout(serverCtx, timeout)
+		// first wait for grace period of 30s
+		shutdownCtx, _ := context.WithTimeout(serverCtx, timeout)
 
-    go func() {
-      <-shutdownCtx.Done()
-      if shutdownCtx.Err() == context.DeadlineExceeded {
-        log.Fatalf("gracefull shutdown timed out after %d seconds. forcing shutdown.", timeout)
-      }
-    }()
+		go func() {
+			<-shutdownCtx.Done()
+			if shutdownCtx.Err() == context.DeadlineExceeded {
+				log.Fatalf("gracefull shutdown timed out after %d seconds. forcing shutdown.", timeout)
+			}
+		}()
 
-    // shutdown for real
-    err := server.Shutdown(shutdownCtx)
-    if err != nil {
-      log.Fatal(err)
-    }
-    serverStopCtx()
+		// shutdown for real
+		err := server.Shutdown(shutdownCtx)
+		if err != nil {
+			log.Fatal(err)
+		}
+		serverStopCtx()
 
-  }()
+	}()
 
-  err = server.ListenAndServe()
-  if err != nil && err != http.ErrServerClosed {
-    log.Fatal(err)
-  }
-  <-serverCtx.Done()
+	err = server.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
+	<-serverCtx.Done()
 }
 
 func service(api API) http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Use(cors.Handler(cors.Options{
-    AllowedOrigins: []string{"*"},
+		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders: []string{"Link"},
@@ -101,7 +101,7 @@ func service(api API) http.Handler {
 		fmt.Printf("registering endpoint: %s %s %s\n", endpoint.Request.Method, endpoint.Request.Endpoint, endpoint.Response.BodyFile)
 		r.Method(endpoint.Request.Method, endpoint.Request.Endpoint, writeJsonResponse(endpoint.Response.BodyFile))
 	}
-  return r
+	return r
 }
 
 func writeJsonResponse(filename string) http.HandlerFunc {
